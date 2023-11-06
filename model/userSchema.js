@@ -22,10 +22,11 @@ const userSchema = mongoose.Schema({
         type: String,
         // Add other properties as needed
     },
-    googleID: {
+    googleID: { 
         type: String,
         // Add other properties as needed
     }
+   
 });
 
 // Create a Mongoose model for the "User" collection using the user schema
