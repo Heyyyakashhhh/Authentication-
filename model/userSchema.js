@@ -22,6 +22,11 @@ const userSchema = mongoose.Schema({
         type: String,
         // Add other properties as needed
     },
+    profilePicture:{
+        type: String,
+        // required: true
+    },
+  
     googleID: { 
         type: String,
         // Add other properties as needed

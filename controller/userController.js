@@ -7,17 +7,20 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy; // Import th
 const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const { response } = require('express'); // Import Express and its response module
 const e = require('express');
+const multer  = require('multer')
 
-// Define the login controller
+
+ 
 module.exports.login = async (req, res) => {
     try {
-        const { email, name, password } = req.body;
+        const { email, password } = req.body;
 
         // Check if the provided email exists in the database
         const validEmail = await User.findOne({ email });
+   
 
         if (!validEmail) {
-            res.redirect("/register"); // Redirect to the registration page or return an error response
+            res.redirect("/upload"); // Redirect to the registration page or return an error response
         } else {
             // Compare the provided password with the hashed password in the database
             const isPassValid = await bcrypt.compare(password, validEmail.password);
@@ -26,7 +29,7 @@ module.exports.login = async (req, res) => {
                 res.status(400).send("Invalid Details"); // Return an error response for invalid credentials
             } else {
                 res.status(201).render("home", {
-                    name: validEmail.name,
+                   validEmail
                 });
             }
         }
@@ -36,40 +39,48 @@ module.exports.login = async (req, res) => {
 };
 
 // Define the registration controller
-module.exports.register = async (req, res) => {
+
+module.exports.register = async (req, res, next) => {
+    
+
+
     try {
-        const { email, name, password, confirmPassword } = req.body;
+        // Handle file upload
+         
 
-        // Check if the email already exists in the database
-        const existsEmail = await User.findOne({ email });
+            const { email, name, password, confirmPassword , profilePicture } = req.body;
 
-        if (existsEmail) {
-            // Email already exists, return an error response
-            return res.status(400).redirect("/");
-        }
+            // Check if the email already exists in the database
+            const existsEmail = await User.findOne({ email });
 
-        // Hash the user's password before saving it
-        const hashPassword = await bcrypt.hash(password, 10);
+            if (existsEmail) {
+                // Email already exists, return an error response
+                return res.status(400).redirect('/');
+            }
 
-        // Create a new user instance
-        const newUser = new User({
-            email,
-            name,
-            password: hashPassword,
-        });
+            // Hash the user's password before saving it
+            const hashPassword = await bcrypt.hash(password, 10);
 
-        if (password === confirmPassword) {
-            await newUser.save();
-            res.status(200).redirect("/");
-        } else {
-            res.status(400).json({ message: "Confirm password mismatch" });
-        }
+            // Create a new user instance
+            const newUser = new User({
+                email,
+                name,
+                password: hashPassword,
+                profilePicture : req.file ? req.file.filename : null,// Save the file path in the user model
+            });
+
+            if (password === confirmPassword) {
+                await newUser.save();
+                res.status(200).redirect('/');
+            } else {
+                res.status(400).json({ message: 'Confirm password mismatch' });
+            }
+        
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "An error occurred during registration." });
+        res.status(500).json({ message: 'An error occurred during registration.' });
     }
 };
-
 // Define the controller for updating the user's password
 module.exports.updatePass = async (req, res) => {
     try {

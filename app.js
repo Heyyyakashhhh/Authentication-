@@ -7,15 +7,16 @@ const passport = require('passport');
 const session = require('express-session');
 const route = require('./routes/userRouter'); // Import the userRouter or relevant route file here
 
+
 // Load environment variables from a .env file
-require('dotenv').config();
 
 // Initialize Passport with the passport configuration
 require('./config/passport')(passport);
 
 // Enable parsing of URL-encoded data
-app.use(express.urlencoded({ extended: true }));
-
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static('./views'))
+app.use(express.static('./uploads'))
 // Initialize the Express session
 app.use(session({
   secret: 'keyboard cat', // Secret used to sign session ID cookies
